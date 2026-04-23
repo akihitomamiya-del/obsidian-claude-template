@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "pubmed": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@cyanheads/pubmed-mcp-server"]
+    },
+    "biorxiv": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "paper-search-mcp-nodejs"]
+    },
+    "papers": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@sura_ai/papers"]
+    },
+    "latest-science": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@futurelab-studio/latest-science-mcp"]
+    }
+  }
+}

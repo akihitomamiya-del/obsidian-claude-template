@@ -1,0 +1,61 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/check-papers-drop.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/check-inbox.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/check-review-markers.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/check-new-arrivals-age.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/check-backlog.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/check-vault-sync-drafts.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/sync-gcal.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/guard-vault-safety.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/check-wikilinks.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

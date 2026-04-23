@@ -1,0 +1,44 @@
+{
+  "name": "Obsidian + Claude Code",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      "TZ": "${localEnv:TZ:UTC}",
+      "CLAUDE_CODE_VERSION": "latest"
+    }
+  },
+  "runArgs": [
+    "--cap-add=NET_ADMIN",
+    "--cap-add=NET_RAW"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh"
+      }
+    }
+  },
+  "remoteUser": "node",
+  "mounts": [
+    "source=obsidian-claude-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
+    "source=obsidian-claude-config-${devcontainerId},target=/home/node/.claude,type=volume",
+    "source=${localEnv:HOME}/ObsidianVault,target=/workspace/ObsidianVault,type=bind,consistency=delegated",
+    "source=${localEnv:HOME}/Desktop/ClaudeDropbox,target=/workspace/drop,type=bind,consistency=delegated,readonly"
+  ],
+  "containerEnv": {
+    "NODE_OPTIONS": "--max-old-space-size=4096",
+    "CLAUDE_CONFIG_DIR": "/home/node/.claude"
+  },
+  "remoteEnv": {
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}"
+  },
+  "initializeCommand": "mkdir -p ~/Desktop/ClaudeDropbox",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
+  "workspaceFolder": "/workspace",
+  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+  "postCreateCommand": "echo 'Container ready. Run: claude --dangerously-skip-permissions' && echo 'Vault mounted at /workspace/ObsidianVault' && echo 'Drop folder mounted at /workspace/drop (read-only)'",
+  "waitFor": "postStartCommand"
+}
