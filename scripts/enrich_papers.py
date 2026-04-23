@@ -104,8 +104,11 @@ def pdf_extract(input_dir: str):
     pdfs = sorted(input_path.rglob("*.pdf"))
     print(f"Found {len(pdfs)} PDFs in {input_dir}")
 
-    # Skip patterns
-    skip_re = re.compile(r"(^mmc\d|MOESM|_ESM|SUPPLEMENTARY|Author_Instruct|AUTHOR.AGREE|^Bio-protocol|N3-Kethoxal|_sm\.|_checklist)", re.IGNORECASE)
+    # Skip common non-paper PDF file patterns (supplementary materials,
+    # author instructions, publishing agreements, etc.). Add your own
+    # domain-specific filename patterns here if you want to skip certain
+    # PDFs automatically (e.g. specific journals or reagent datasheets).
+    skip_re = re.compile(r"(^mmc\d|MOESM|_ESM|SUPPLEMENTARY|Author_Instruct|AUTHOR.AGREE|_sm\.|_checklist)", re.IGNORECASE)
 
     manifest = []
     for pdf in pdfs:
