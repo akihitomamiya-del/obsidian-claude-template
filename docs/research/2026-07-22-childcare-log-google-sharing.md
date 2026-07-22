@@ -2,7 +2,7 @@
 date: 2026-07-22
 type: note
 tags: [research, 育児記録, google, obsidian, family-sharing]
-status: draft
+status: final
 ---
 
 # 育児記録 × Obsidian × 妻との共有 — 方法の徹底調査
@@ -15,7 +15,12 @@ status: draft
 
 ## 0. 結論サマリ(先に要点)
 
-<!-- PLACEHOLDER: 最終推奨 3案 — 調査結果確定後に記入 -->
+1. **「vault自体をGoogle Driveで夫婦同期」は全滅**(公式非サポート・iOS不可・プラグイン2種とも実データ損失/共有不成立)。Googleで共有するなら「**vaultは自分専用の統合層、Googleは入力層と共有層**」と割り切るのが正解。
+2. **今すぐ動く最短構成(全部0円)**: ①既存の**Guma&Goro共有カレンダー**にClaudeが健診・予防接種を登録(既存GCal同期でvaultにも自動反映)/②あなたの**Gem→Keep設計を月次ノート化して妻と共有**/③**共有Sheets+Formsホームアイコン**を定型記録の正本に/④Claudeが**共有フォルダへ週報Googleドキュメントを自動生成**(本セッションで実測済み)/⑤写真は**フォト共有アルバム**。
+3. **妻宛メールの完全自動化も可能**: MCPは下書きまでだが、**Apps Scriptの定番パターンで件名タグ付き下書きを定時自動送信**できる(個人枠100宛先/日)。
+4. **入力UXの本命対抗はぴよログ**(夫婦リアルタイム共有・授乳タイマー・予防接種管理を公式提供)。月1エクスポート→Claudeがvaultへ編纂、のハイブリッドは本テンプレの三層哲学と最も整合。
+5. **非GoogleならRelayプラグイン**(各自vault+共有フォルダ、CRDTで競合消滅、夫婦なら0円)が目的特化の最有力。公式Obsidian Syncは堅実だが**夫婦2契約(年$96〜)必須**。
+6. 詳細比較は§3、推奨3案は§4、実装手順は§5、リスク(データ損失・プライバシー)は§6。
 
 ---
 
@@ -134,19 +139,27 @@ deep-researchの敵対的検証(3票制)を通過した一次ソース確認の�
 
 ### E. Google フォーム入力口(→ D のシートへ自動蓄積)
 
-<!-- GAP-FILL PENDING: タイムスタンプ自動記録・ホーム画面ショートカット・事前入力リンク・日本語の育児記録テンプレ事例 -->
+**仕組み**: 種別(ミルク/おむつ/睡眠/体温…)をラジオボタン、量を短答にしたフォームを作成 → 回答は連携シートに**送信時刻のタイムスタンプ付きで自動蓄積**(Confirmed)。夫婦それぞれのスマホの**ホーム画面にショートカット追加**(iPhone: Safari共有メニュー / Android: Chromeメニュー — 日本の学校でも配布される定番手順)で、アプリ風の1タップ入力口になる。
+
+- **事前入力リンク**(Confirmed): フォームの「事前入力したリンクを取得」で `entry.<id>=値` 付きURLを作れる → 「ミルク」固定のショートカット、「おむつ」固定のショートカット、と**種別ごとにホーム画面アイコンを分ける**運用が可能。
+- **上級**: iOSショートカットから `formResponse` へ直接POSTする完全1タップ/Siri音声記録の実例あり(日英の解説記事で確認)— Forms画面すら開かない。
+- 既製の日本語「育児記録フォーム」テンプレは見当たらず(専用アプリ文化が支配的)。自作は上記の通り軽量。IFTTT+音声→シート記録の先行事例あり。
+- **成長曲線**(Confirmed): 日本小児内分泌学会が**0-6歳パーセンタイル曲線のExcelデータを無償配布**(厚労省乳幼児身体発育調査ベース、LMS法)→ Sheetsに取り込み、体重・身長の実測を重ねれば妻と共有できる成長曲線グラフになる。vault側ではClaudeが同データで分析メモを維持。
+
+**評価**: D(シート正本)の入力UXを一気に引き上げる無料の定番。妻に新アプリを覚えさせず「ホームのアイコンを押して2タップ」で済むのが強い。
 
 ### F. 共有カレンダー(既存「Guma&Goro」の活用)— **即日可能**
 
 - **既にある**: 「Guma&Goro」(みのむしケアのための予定調整)が夫婦共有カレンダーとして稼働中(本セッションで確認)。Claude は MCP で**このカレンダーに直接イベント作成可能**(calendarId指定)— 健診・**予防接種スケジュール**(RRULE繰り返し可)・両親学級・保育園見学など。
 - テンプレ既存機能との合流: このテンプレは **GCal→vault 同期(sync-gcal.sh)が既設**。Guma&Goro のイベントは自動的に daily note の `## スケジュール` と TASKS.md(`^ev-YYMMDD-slug`)に流れ込む — **妻側はカレンダーを見るだけ、ユーザー側はvaultに写る**、が今すぐ成立する。
-- 代替: 個人カレンダーのイベントに妻を招待者(attendee)追加でも妻のカレンダーに載る(MCP対応確認済み)。
-<!-- GAP-FILL PENDING: ファミリーグループ自動「ファミリー」カレンダーの一般仕様 -->
+- 代替: 個人カレンダーのイベントに妻を招待者(attendee)追加でも妻のカレンダーに届く(MCP対応確認済み)。ただし自動でカレンダーに載るかは妻側の「招待をカレンダーに追加」設定次第(Confirmed)— 夫婦運用は共有カレンダー方式が確実。
+- 一般仕様(Confirmed via snippets): Googleファミリーグループを作ると**「ファミリー」カレンダーが自動作成**され、メンバー全員が追加設定なしで閲覧・編集できる。共有カレンダーのイベントは**イベント毎の招待なしで**相手に見える。— 既にGuma&Goroがあるので新設は不要だが、Googleフォト/YouTube等のファミリー共有も使うならファミリーグループ作成は検討価値あり。
 
 ### G. メールダイジェスト(Gmail)
 
 - **このMCPは下書きのみ**(Confirmed): 妻宛の日次ダイジェストは「Claudeが下書き作成(宛先入り)→ユーザーがワンタップ送信」まで。テンプレ既存の vault-sync 定時エージェント(3回/日)に「妻宛て育児サマリー下書き」を足すのが素直。
-- 完全自動送信が欲しい場合の迂回路: <!-- GAP-FILL PENDING: Apps Script 時間主導トリガー+MailApp の定番パターン・無料枠 -->
+- **完全自動送信の迂回路 = Apps Script 送信ボット**(Confirmed): 時間主導トリガー(日次、指定時刻±1時間のゆらぎ、`nearMinute()`で±15分)で走るスクリプトが **`GmailApp.getDrafts()` から件名タグ(例 `[育児DIGEST]`)の下書きを拾って `draft.send()` する**定番パターンが確立している。つまり「**Claudeが夜に下書き作成 → Apps Scriptが自動送信**」で、MCPの制約を保ったまま妻への配信を完全自動化できる。無料枠は個人アカウントで**100宛先/日**(夫婦利用には無限に等しい)。セットアップはシート/スクリプトエディタから15分程度。
+- 変種: Apps Script が直接シートの新規行をHTML表に整形して送る古典レシピも豊富(Claudeを介さない冗長系として有用)。
 
 ### H. Google フォト(写真の共有と vault への埋め込み)
 
@@ -155,9 +168,16 @@ deep-researchの敵対的検証(3票制)を通過した一次ソース確認の�
 - **継続性リスク**(Confirmed): 同プラグインはメンテナンスモード(新メンテナ募集中)。作者はGoogleフォト自体を離れ Immich(セルフホスト)へ移行し、Immich用ピッカーを推奨。
 - **推奨**: 写真の正本はGoogleフォト共有アルバム。vaultにはマイルストーン級の数枚だけ手動ピッカーで(またはリンクだけ)残す。将来自動化したくなったら Immich 移行が本線。
 
-### I. NotebookLM(妻が「調べられる」共有)
+### I. NotebookLM(妻が「調べられる」AI窓口)
 
-<!-- GAP-FILL PENDING: ノートブック共有可否・Driveソース再同期・無料枠 -->
+- **個人アカウント間の共有: 可**(Confirmed): 共有ボタンからメールで招待、閲覧者(チャット可・ソース追加不可)/編集者の権限区分。2025-06からは「リンクを知っている全員」公開も可能(育児記録では使わないこと)。
+- **Driveソースの自動同期: 2026-05-26 ロールアウトで解決済み**(Confirmed): それまで手動「Driveと同期」ボタンだったが、現在は**バックグラウンドで数分間隔の自動同期**。→ **C の共有フォルダに Claude が積む週報/月報Docをソースにした「みのむし育児ノートブック」を妻と共有すると、妻は「最近の睡眠リズムは?」「予防接種いつだっけ?」と自然言語で聞ける**。ソースは常に最新。
+- 無料枠(Confirmed multi-source / 音声回数のみ流動): 100ノートブック・50ソース/冊・50チャット/日 — 夫婦利用に十分。
+- 位置づけ: 必須ではない「閲覧層の上位互換」。C+Dが回り始めた後の追加レイヤーとして優秀。
+
+### 補足: このセッションから直接使える非Google連携
+
+- **Notion MCP コネクタが本セッションに接続済み**(Confirmed): もし共有台帳をNotion(無料枠: 本人+ゲスト10人、公式API)にすると、Claudeが**読み書き両方向**を自動化できる(SheetsのMCP読み取り専用制約がない)。Google縛りを外すなら台帳の有力代替。
 
 ### K. 専用アプリハイブリッド(ぴよログ → vault)— **入力層の本命対抗**
 
@@ -215,28 +235,128 @@ deep-researchの敵対的検証(3票制)を通過した一次ソース確認の�
 
 ## 3. 比較表
 
-<!-- PLACEHOLDER -->
+| 方式 | 妻の手間 | 入力の速さ | リアルタイム性 | 双方向 | vault自動接続 | 費用 | 総合 |
+|---|---|---|---|---|---|---|---|
+| A. Gem→Keep共有ノート | ほぼゼロ(共有を受けるだけ) | ◎ 音声一言 | ◎ | ◎ | △ gkeepapi(非公式)or 手貼り | 0円 | **入力層の現本命** |
+| B. vault丸ごとDrive同期 | Obsidian導入+プラグイン | △ | △ | ◯ | ◎ | 0〜PRO | **不採用**(データ損失リスク) |
+| C. Claude→共有フォルダDoc | ゼロ(見るだけ+コメント) | —(出力層) | △ 日次/週次 | △ コメント往復 | ◎ 実測済み | 0円 | **出力層の本命** |
+| D. 共有Sheets台帳 | Sheetsアプリで閲覧/追記 | ◯ | ◯ | ◎ | ◎ 読取(書込は新規のみ) | 0円 | **構造化正本** |
+| E. Forms入力口 | ホームのアイコン2タップ | ◎ | ◯ | ◎ | (D経由) | 0円 | Dの入力UX強化 |
+| F. 共有カレンダー(既存) | ゼロ | ◯ | ◎ | ◎ | ◎ 既設sync | 0円 | **即日・確実** |
+| G. Gmailダイジェスト | 受信するだけ | — | △ 日次 | × | ◎(下書き)+Apps Scriptで全自動化可 | 0円 | 補助 |
+| H. フォト共有アルバム | ほぼゼロ | ◎ | ◎ | ◎ | × 自動埋込は不可能に | 0円 | 写真の正本 |
+| I. NotebookLM | 招待を受けるだけ | —(閲覧層) | ◎ 自動同期 | △ 質問可 | (C経由) | 0円 | 上級の閲覧層 |
+| K. ぴよログ→vault | 専用アプリ導入(定番) | ◎◎ タイマー付 | ◎ | ◎ | ◯ 月次エクスポート取込 | 0円 | **入力層の対抗本命** |
+| Relay(非G) | Obsidian導入 | ◯ | ◎ CRDT | ◎ | ◎ 同一vault | 0円(写真$5/月) | 妻がObsidian派なら |
+| Obsidian Sync共有(非G) | Obsidian導入+**契約** | ◯ | ◯ | ◎ | ◎ | 年約$96〜 | 公式・堅実 |
+| Apple Notes共有(非G) | ゼロ | ◎ | ◎ | ◎ | × 閉じている | 0円 | Claude統合と相性悪 |
+| Notion(非G) | アプリ導入(ゲスト無料) | ◯ | ◎ | ◎ | ◎ **MCPで読み書き** | 0円 | Google縛りを外すなら |
 
 ---
 
-## 4. 推奨アーキテクチャ(妻の関与スタイル別 3案)
+## 4. 推奨アーキテクチャ(3案)
 
-<!-- PLACEHOLDER -->
+### 推奨1 — 「Google純正フル活用」構成(基本推奨。全部0円・妻の学習コストほぼゼロ)
+
+```
+入力層   : Gem→Keep共有ノート(自由文・音声)+ Forms→Sheets(定型・1タップ)
+           └ Keepは月次ノート化してファミリー/妻と共有(毎日の共有し直しを排除)
+予定層   : Guma&Goroカレンダー(既存)← Claudeが健診・予防接種を登録
+写真層   : Googleフォト共有アルバム
+統合層   : vault(03_Personal/Family/)← Claudeが Sheets読取(MCP)+Keep取込で編纂
+共有出力 : Claude→共有フォルダに週報Doc(実測済み)/ 妻宛[育児DIGEST]下書き
+           └ 完全自動化するなら Apps Script 送信ボット(15分工作)
+閲覧強化 : (任意)週報Doc群をソースに NotebookLM 共有ノートブック(自動同期)
+```
+- 妻に要求するもの: **今使っているGoogleアプリのまま**。Keepの共有を受ける+ホームにFormsアイコン+カレンダー/フォトを見る。
+- 弱点: Keep→vault が非公式ライブラリ(gkeepapi)or 手貼りに依存。定型記録はSheets正本に寄せて依存度を下げる。
+
+### 推奨2 — 「入力はぴよログ」ハイブリッド(新生児期の実用性最優先)
+
+```
+入力+夫婦共有: ぴよログ(リアルタイム共有・授乳タイマー・予防接種アプリ)
+Google層     : Guma&Goroカレンダー+フォト共有アルバム+(任意)週報Doc
+vault統合    : 月1回テキスト/PDF書き出し→dropフォルダ→Claudeがパースし
+               成長ページ・月次サマリー・成長曲線分析(学会パーセンタイルExcel対照)を維持
+```
+- 割り切り: リアルタイム層は既製品に任せ、vaultは「編纂・分析・長期の物語」に特化(このテンプレのLLM Wiki哲学と実は最整合)。
+- 弱点: テキスト書き出しの公式仕様が未確認(非公式パーサ群から実在ほぼ確実だが、採用前に実機確認)。
+
+### 推奨3 — 「妻もObsidian」構成(妻がMarkdown/Obsidianに抵抗がない場合のみ)
+
+```
+共有基盤 : Relay無料枠(各自vault+Family/共有フォルダ、CRDTで競合消滅)
+入力     : iOSショートカット音声追記(obsidian://new&append / Files直追記)
+Google層 : カレンダー+フォトのみ
+```
+- 0円・vault直結・リアルタイム。弱点: ホスト版は非E2EE/小規模企業依存/写真同期は$5月。**Obsidian Sync×2契約(年$96〜)が公式堅実な代替**(ただし日次ノート同時作成レースに注意)。
+- コミュニティの教訓は「非技術側への強制は続かない」— 妻が乗り気でなければ推奨1/2へ。
+
+**共通の不採用**: vault丸ごとGoogle Drive同期(B)、iCloud共有フォルダ(iOS不成立)、Remotely Save二人使い、obsidian-git mobile。
 
 ---
 
 ## 5. このテンプレートへの実装ロードマップ
 
-<!-- PLACEHOLDER: CLAUDE.md 追記案 / hook 案 / 予約エージェント案 / vault 構造案 -->
+### Phase 0 — 手動セットアップ(初回15分、ユーザー作業)
+1. Driveに「育児記録」フォルダ作成 → 妻に**「制限付き」共有**(リンク共有は使わない)。以後Claudeがここに週報Docを積む(権限自動継承)。フォルダIDをCLAUDE.mdに記録。
+2. Keepの育児記録ノートを**月次1本**に変更(Gemプロンプト1行修正)+ 妻をコラボレーター追加(またはファミリーグループ作成)。
+3. (推奨1なら)Forms作成 → 夫婦のホーム画面にショートカット。シートIDをCLAUDE.mdに記録。
+
+### Phase 1 — vault構造(Claude作業)
+```
+03_Personal/Family/Baby/
+  成長記録.md          # 体重・身長表 + 成長曲線メモ(学会パーセンタイル対照)
+  予防接種.md          # スケジュール表、^ev-ID で TASKS.md/GCalと連動
+  健診.md              # 健診記録(病院・所見)
+  月次/2026-07.md      # 月次サマリー(Keep/Sheets/ぴよログ取込の編纂先)
+```
+- Daily note に `## 育児 / Baby` セクション追加 — **注意: `_Templates/` は guard-vault-safety.sh が編集ブロックするため、テンプレ変更はユーザーに依頼**(または一時的にhook解除の合意を取る)。
+
+### Phase 2 — CLAUDE.md スキーマ追記(Claude作業)
+「## 育児記録」セクションを新設: データ源(SheetsID/KeepノートNaming/カレンダーID=Guma&Goro)、取り込み手順、**絵文字→テキスト正規化マップ**(🍼→ミルク 等。MCP経路の文字化け対策)、共有フォルダID、週報Docの命名規則(`育児週報-YYYY-Wnn`)。
+
+### Phase 3 — SessionStart hook(既存パターン踏襲)
+`check-baby-log.sh`: 「Sheetsの新規行とKeep月次ノートを確認して日次ノート/成長ページに取り込むか」をプロンプトするだけの軽量hook(sync-gcal.sh と同型)。
+
+### Phase 4 — 定時自動化(任意)
+- claude.ai 予約エージェント「baby-evening」(21時): Sheets読取→日次サマリー→週報Doc更新(新規作成)→妻宛 `[育児DIGEST]` 下書き。
+- Apps Script 送信ボット: `[育児DIGEST]` 下書きを 21:30 に自動送信(§2-G)。
+- gkeepapi 夜間ジョブ: **devcontainer はファイアウォールでGoogle不可のため、ホストMacのlaunchd/cron で実行**し、出力mdをvault/dropに書く設計。マスタートークンはKeychain保管。
+
+### Phase 5 — 閲覧強化(任意)
+NotebookLM「みのむし育児記録」ノートブック: 共有フォルダの週報/月報をソース登録(2026-05から自動同期)→ 妻を閲覧者招待。
 
 ---
 
 ## 6. リスクと注意点
 
-<!-- PLACEHOLDER: 同期競合 / iOS制約 / Photos API変更 / プライバシー / MCP制約 -->
+1. **データ損失系(最重要)**: Drive同期プラグイン2種は実損報告あり(§2-B)— 育児記録の基盤にしない。Obsidian Sync採用時も「夫婦それぞれの端末で同日ノートを自動生成」するとリモート版が黙って勝つ(File Recoveryで救済可)。1つのvaultに2つの同期系(iCloud+他)を重ねるのは公式警告のある事故源。
+2. **非公式依存**: gkeepapi はGoogle側変更でいつでも壊れうる(読み取り専用・壊れても入力層は無傷、の fail-safe 設計に)。マスタートークンはフルアクセス資格情報 — 厳重保管。
+3. **Google Photos の自動連携は既に死んだ**(2025-03 API廃止)。プラグインは手動ピッカーのみ+メンテナンスモード。写真はフォト共有アルバムを正本にし、vaultへは厳選数枚。長期はImmich検討。
+4. **MCPの非対称**: 既存ファイル更新不可(新規作成のみ)/Gmail送信不可(下書きのみ)/権限付与不可(閲覧のみ)。→ 設計は「日付き新規Doc」「共有フォルダの権限継承」「Apps Script送信ボット」で吸収。絵文字は文字化けするためテキスト正規化。
+5. **Gemini の限界**: 既存Docs/Sheetsへの追記不可(phantom edit 報告多数)。Scheduled Actions は有料(Pro/Ultra)かつアプリ内配信のみ。共有GemをKeep共有ノートに向ける構成は**実地テスト1回必須**(§2-A)。
+6. **変換の失われ物**: Docs Markdown変換で `[[wikilink]]`・frontmatter・callout・チェックボックスは保持されない。共有出力はプレーンな見出し+表+リストに落とす。
+7. **プライバシー(子どものデータ)**: 共有は必ず「制限付き(特定ユーザー)」— 「リンクを知っている全員」は写真・健康データでは使わない(URL流出=匿名アクセス・追跡不能)。夫婦とも2FA有効化。ファイル名・シートに氏名/生年月日/病院名などの特定情報を過剰に載せない。SNS公開系(NotebookLM公開リンク含む)は不使用。日本語圏の注意喚起(デジタル誘拐・デジタルタトゥー・背景からの自宅特定)も踏まえ、共有範囲は夫婦+(必要時)祖父母まで。
+8. **時間感度**: 本レポートは2026-07-22時点のスナップショット。特に Remotely Save/gdrive-sync の状態、NotebookLM の枠、ぴよログのエクスポート仕様は採用前に再確認(§7の一次ソースへ)。
 
 ---
 
-## 7. 出典
+## 7. 主要出典(2026-07-22 取得)
 
-<!-- PLACEHOLDER -->
+**検証方法**: deep-researchワークフロー(111エージェント、クレーム毎3票の敵対的検証、13クレーム生存/1反証)+特化エージェント2本+本セッションでのMCP実測。support.google.com / blog.google / piyolog.com は本環境のプロキシで403のため、該当箇所は「複数独立ソースの収束+検索インデックス」検証(本文に明示)。
+
+- Obsidian公式ヘルプ(同期の公式見解・iOS制約・Sync共有/価格・競合処理): github.com/obsidianmd/obsidian-help(master、逐語確認)
+- Remotely Save: github.com/remotely-save/remotely-save(README・docs/remote_services/googledrive・pro、Discussion #812、Issue #1065/#969)
+- obsidian-gdrive-sync: github.com/stravo1/obsidian-gdrive-sync(README、Issue #27/#95、PR #105)
+- Google Docs Markdown対応: workspaceupdates.googleblog.com 2024-07-16 告知+support.google.com/docs/answer/12014036
+- Google Photos プラグイン: github.com/alangrainger/obsidian-google-photos(v2.0.0 2025-07-02、Issue #56、PR #63)/後継: eikowagenknecht/obsidian-immich-picker
+- Keep 共有/エクスポート/API: support.google.com/keep/answer/6101196・7313121、developers.google.com/workspace/keep(APIリファレンス=update不在)、gkeepapi(PyPI v0.17.1 2026-01-05 直接確認)
+- Gemini: Gem共有(blog.google 2025-09-18、9to5Google)、Keepアプリ連携(support.google.com/gemini/answer/15230597)、Scheduled Actions(2025-06-06 告知、support 16316416)、Docs/Sheets追記不可(phantom edit 各コミュニティスレッド)
+- Relay: github.com/No-Instructions/Relay(README価格)/ Peerdraft: github.com/peerdraft/obsidian-plugin / LiveSync: github.com/vrtmrz/obsidian-livesync(v0.25.83 2026-07-16、Discussion #180、Issue #665)
+- NotebookLM: 共有(support.google.com/notebooklm/answer/16322204)、公開リンク(2025-06-03 各報道)、**Drive自動同期(workspaceupdates 2026-05-26)**、無料枠(2026年複数ガイド収束)
+- Forms/Sheets/Apps Script: タイムスタンプ・事前入力リンク(labnol.org 等)、ショートカット手順(Chrome公式ヘルプJA・国内学校配布PDF)、クォータ100宛先/日(developers.google.com/apps-script/guides/services/quotas)、下書き自動送信(labnol.org/code/19716)
+- 成長曲線データ: 日本小児内分泌学会 jspe.umin.jp/medical/chart_dl.html(Excel配布)、厚労省乳幼児身体発育調査
+- ぴよログ: piyolog.com(検索インデックス経由)+非公式パーサ necocen/piyoparse・hiracky16/piyolog-parser
+- プライバシー(日本語圏): G-gen・GWS Guide(2025-12)・ibis(2026-02)のDrive共有設定解説、INTERNET Watch・時事(2025-06)等の子ども写真共有リスク解説
+- 本セッション実測: Drive MCP `text/markdown`→Googleドキュメント変換(見出し/表/リスト保持、絵文字化け、`parentId`対応)、Calendar MCP(Guma&Goro確認・attendee/RRULE対応)、Gmail MCP(下書きのみ)、Drive読取(コメント込み対応)
