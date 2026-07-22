@@ -5,9 +5,9 @@ tags: [research, 育児記録, google, obsidian, family-sharing]
 status: draft
 ---
 
-# 育児記録 × Obsidian × Google共有 — 方法の徹底調査
+# 育児記録 × Obsidian × 妻との共有 — 方法の徹底調査
 
-**質問**: このテンプレート(Claude管理のObsidian vault)で育児記録をつけ、Googleのサービスで妻と共有するにはどんな方法がありうるか。
+**質問**: このテンプレート(Claude管理のObsidian vault)で育児記録をつけ、妻と共有するにはどんな方法がありうるか。Googleのサービス経由を主軸に、**非Google(Obsidian自体の共有機能等)も含めて**調べる。
 
 **調査日**: 2026-07-22。事実の確度は vault 規約に従い **Confirmed / Inferred / Speculative** で明示する。
 
@@ -54,9 +54,15 @@ status: draft
 
 ---
 
-## 2. 方法カタログ
+## 2. 方法カタログ(Google経由)
 
 <!-- PLACEHOLDER: A〜K 各方式 — 外部調査結果と統合して記入 -->
+
+---
+
+## 2b. 方法カタログ(非Google — Obsidian自体の共有ほか)
+
+<!-- PLACEHOLDER: Obsidian Sync共有vault / Self-hosted LiveSync / Relay等の共同編集プラグイン / iCloud・Dropbox共有フォルダ / Syncthing / Publish / iOSショートカット入力 / Apple Notes・Notion比較 -->
 
 ---
 
