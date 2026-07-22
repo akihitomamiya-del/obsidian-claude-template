@@ -105,7 +105,46 @@ status: draft
 
 ## 2b. 方法カタログ(非Google — Obsidian自体の共有ほか)
 
-<!-- PLACEHOLDER: Obsidian Sync共有vault / Self-hosted LiveSync / Relay等の共同編集プラグイン / iCloud・Dropbox共有フォルダ / Syncthing / Publish / iOSショートカット入力 / Apple Notes・Notion比較 -->
+前提: ユーザーはiPhoneでObsidianを常用(このテンプレの設計前提)。妻の端末は未確認 — 以下はiPhone想定で記載し、Android なら緩和される点を注記する。出典は主に Obsidian 公式ヘルプのソースリポジトリ(obsidianmd/obsidian-help、2026-07-22取得)と各プラグインの公式リポジトリ。
+
+### 妻も Obsidian を使う場合(vault 自体を共有)
+
+| 方式 | 費用 | 仕組み・評価 | 確度 |
+|---|---|---|---|
+| **Relay プラグイン**(system3) | **無料枠: 3ユーザー・各2端末・Markdown無制限**(添付0MB)。写真も同期なら Hobby $5/月(10GB) | **目的特化で最有力**。CRDT(Yjs)による**フォルダ単位のリアルタイム共同編集** — 各自が自分のvaultを持ち、`Family/` だけ共有マウント。ライブカーソル、オフライン編集も競合ファイルなしで自動マージ(日次ノートの同時編集問題が原理的に消える)。iOS対応。活発に開発中(v0.7.6, 2026-05)。夫婦利用の証言あり。**注意: ホスト版はE2EEではない**(自己ホストサーバも可)。運営は2人の小規模会社 | Confirmed(価格・アーキテクチャはREADME)/ iOS実運用の成熟度は Inferred |
+| **Obsidian Sync 共有vault**(公式) | **夫婦それぞれ契約が必要**: Standard $4/月(年払)×2 ≒ **年$96〜** | 公式の正攻法。リモートvaultに妻のObsidianアカウントを招待(最大20人)。権限区分なし(全員フル編集)。「妻はFamily/だけ同期」は**端末ごとの除外フォルダ設定**で可能だが、これはアクセス制御ではない(E2EEパスワードを知る妻は原理上全体にアクセス可)。**きれいな形は「Family専用の小vaultを別リモートvaultとして共有」**(自分が個人vault+家族vaultの2リモートを持つならPlus $8/月が必要)。競合処理: mdは自動マージ(diff-match-patch)だが、**同じノートを両端末でほぼ同時に新規作成するとマージされずリモート版が黙って勝つ**(=夫婦が各自「今日の日次ノート」を自動生成する構成は危険。File Recoveryで救済可) | Confirmed(共有には全員のSync契約が必要 — 公式ヘルプ実文書で確認。価格は複数ソース一致のInferred-strong) |
+| **Self-hosted LiveSync**(vrtmrz) | **$0可**(IBM Cloudant Lite無料1GB/自宅サーバ/R2。fly.io無料枠は消滅) | 非常に活発(v0.25.83, 2026-07-16)。日本人メンテナで日本語資料が豊富。E2EE可。夫婦利用は「同じDB資格情報を共有」で動く(コミュニティ実証)が、**ユーザー識別・権限・帰属の概念はない**。競合は自動+手動解決ダイアログ。iOSはHTTPS+CORS設定必須。**自分が妻のぶんまで同期管理者になる**覚悟が要る | Confirmed(機能・ホスティング)/ 夫婦運用の日常性は Inferred |
+| **Peerdraft** | 永続フォルダ共有は $30/年(所有者のみ)。**妻はアカウント不要**(プラグイン or **Webエディタ**で参加) | E2EEのP2Pライブ共有+永続フォルダ共有。妻がObsidianを入れなくてもWebエディタで書ける点がユニーク。開発は活発(2026-07リリース)だが個人開発・利用者少(iOS信頼性は情報不足) | Confirmed(価格・機能)/ iOS信頼性 Uncertain |
+
+**罠(やってはいけない構成、Confirmed)**:
+- **iCloud共有フォルダ×iPhone**: iOSのObsidianは自分のiCloudコンテナ(`iCloud Drive/Obsidian/`)内しかvaultとして開けないため、**妻のiPhoneでは「共有されたフォルダ」をvaultにできない**(Mac同士なら可)。iPhone夫婦には成立しない。
+- **Remotely Save(無料)で共有フォルダ**: 認可アカウント自身の `/Apps/remotely-save` フォルダ固定のため**2人で同じフォルダを指せない**(Dropboxアカウント自体を共用すれば可だが資格情報共有になる)。競合解決も「新しい方/大きい方が勝ち」の**非マージ型**で共同ログに不向き。最終リリース2024-10と停滞気味。
+- **Syncthing×iPhone2台**: iOSはバックグラウンド常駐不可のため、**常時稼働ハブ(自宅サーバ/Mac)が無いと実用にならない**。公式Androidアプリは2024-12で終了(Syncthing-Forkが後継)。iOSクライアントは Möbius Sync($4.99買切)と Synctrain(OSS、活発)。
+- **obsidian-git×モバイル**: メンテナ自身が「モバイルでは非推奨・非常に不安定」と明言(2026-07時点README)。妻側の選択肢にならない(別アプリGitSyncはあるが非技術者向きでない)。
+
+### 妻は Obsidian を使わない場合(非Google)
+
+| 方式 | 費用 | 評価 | 確度 |
+|---|---|---|---|
+| **Apple Notes 共有ノート** | $0 | iPhone夫婦の**リアルタイム共同編集の基準線**。設定ゼロ・確実。ただし iOS 16 で Siri の「メモに追加」音声追記は廃止(ショートカット経由なら可)。**エクスポートが閉じている**のでvaultへの自動取り込みは不可(AppleScript等の手作業前提)= Claude統合層とは相性が悪い | Confirmed |
+| **Notion 共有ページ** | $0(無料枠=本人+**ゲスト10人**、公式API利用可) | 妻をゲスト招待して共同編集。**公式APIが無料枠で使え、しかも本セッションのClaude環境にはNotionコネクタ(MCP)が既に接続済み** — つまり**ClaudeがNotionの育児ログを直接読み書きでき、vaultへの取り込みを完全自動化できる**。ファイルベースでない点だけがvault哲学と異なる | Confirmed(枠・API。コネクタ接続は本セッションで確認) |
+| **Obsidian Publish** | $8/月(年払)/サイト | 選択したノートだけ公開+**サイト単位**パスワード。妻は閲覧のみ(書けない)。読み取り専用ビューに年$96は割高 | Confirmed(機能)/ 価格 Inferred-strong |
+| **Quartz 4 + Cloudflare Access** | $0 | vault の `Family/` を静的サイト化し、Cloudflare Access(無料〜50人)でメール認証制限。構築は半日仕事、妻の手間ゼロ、ただし**読み取り専用** | Confirmed(パターン実在)/ 細部 Inferred |
+| Anytype | $0(リモート同期〜100MB) | ローカルファースト+E2EEの共有スペース。ただしプレーンMarkdown vaultでもNotion級APIでもなく、今回の構成とは接続しにくい | Confirmed(概要)/ 上限額 Uncertain |
+
+### 入力の高速化(Google不使用・iPhone)
+
+- **公式URIで追記が可能**: `obsidian://new?vault=X&file=Y&content=Z&append`(`silent`(開かず追記)や `daily`(今日のノート)も公式サポート)。iOSショートカット「音声入力→URIを開く」で **Siri起動の音声追記**が組める(「Hey Siri, 育児メモ」)。
+- vault が iCloud/ローカルにあるなら、ショートカットの**ファイル追記アクションでObsidianを起動すらせず**書ける(最速)。
+- 専用キャプチャアプリも複数現存(Bebop / Quick Capture for Obsidian / Quick Draft / Voice Inbox — いずれもvaultフォルダに書くだけなので同期方式と独立に併用可)。
+- Actions URI プラグイン+コンパニオンアプリ(有料)で型付きショートカット部品も可(2026-05更新で活発)。
+
+### コミュニティが報告する夫婦運用の失敗モード(Inferred — スニペットレベルの根拠)
+
+1. **1つのvaultに2つの同期系を重ねる**(iCloud+他)→ 重複・消失・破損。公式ドキュメントにも警告が明記された頻出事故。
+2. **ファイルレベル同期での同時編集**(iCloud/Dropbox/Remotely Save)→ 競合コピーor黙って後勝ち。「夫婦で同じ日次ノート」はまさにこの地雷 — CRDT型(Relay)か追記面の分離で回避。
+3. **`.obsidian` 設定の衝突**(テーマ・プラグインが喧嘩)→ Sync のデバイス別設定か、Relay/Peerdraft の「各自vault+共有フォルダ」モデルで回避。
+4. **配偶者の離脱**: 非技術側にObsidian+プラグイン管理を要求する構成は続かない、が最頻の教訓。「妻は使い慣れた入力面(共有ノート/フォーム/Web)、Claudeがvaultに統合」というハイブリッドが現実解として定着している。
 
 ---
 
